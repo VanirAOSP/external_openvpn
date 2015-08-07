@@ -2,13 +2,16 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Configuration settings */
-#define CONFIGURE_DEFINES "enable_crypto=yes enable_debug=yes enable_def_auth=yes enable_dlopen=unknown enable_dlopen_self=unknown enable_dlopen_self_static=unknown enable_fast_install=yes enable_fragment=yes enable_http_proxy=yes enable_iproute2=no enable_libtool_lock=yes enable_lzo=yes enable_lzo_stub=no enable_management=yes enable_multi=yes enable_multihome=yes enable_pam_dlopen=no enable_password_save=no enable_pedantic=no enable_pf=yes enable_pkcs11=no enable_plugin_auth_pam=yes enable_plugin_down_root=yes enable_plugins=yes enable_port_share=yes enable_selinux=no enable_server=yes enable_shared=yes enable_shared_with_static_runtimes=no enable_small=no enable_socks=yes enable_ssl=yes enable_static=yes enable_strict=no enable_strict_options=no enable_systemd=no enable_win32_dll=yes enable_x509_alt_username=no with_crypto_library=openssl with_gnu_ld=yes with_mem_check=no with_plugindir='$(libdir)/openvpn/plugins' with_sysroot=no"
+#define CONFIGURE_DEFINES "enable_crypto=yes enable_crypto_ofb_cfb=yes enable_debug=yes enable_def_auth=yes enable_dlopen=unknown enable_dlopen_self=unknown enable_dlopen_self_static=unknown enable_fast_install=yes enable_fragment=yes enable_http_proxy=yes enable_iproute2=no enable_libtool_lock=yes enable_lzo=yes enable_lzo_stub=no enable_management=yes enable_multi=yes enable_multihome=yes enable_pam_dlopen=no enable_password_save=no enable_pedantic=no enable_pf=yes enable_pkcs11=no enable_plugin_auth_pam=yes enable_plugin_down_root=yes enable_plugins=yes enable_port_share=yes enable_selinux=no enable_server=yes enable_shared=yes enable_shared_with_static_runtimes=no enable_small=no enable_socks=yes enable_ssl=yes enable_static=yes enable_strict=no enable_strict_options=no enable_systemd=no enable_win32_dll=yes enable_x509_alt_username=no with_crypto_library=openssl with_gnu_ld=yes with_mem_check=no with_plugindir='$(libdir)/openvpn/plugins' with_sysroot=no"
 
 /* special build string */
 /* #undef CONFIGURE_SPECIAL_BUILD */
 
 /* Use memory debugging function in OpenSSL */
 /* #undef CRYPTO_MDEBUG */
+
+/* p11-kit proxy */
+/* #undef DEFAULT_PKCS11_MODULE */
 
 /* Use dmalloc memory debugging library */
 /* #undef DMALLOC */
@@ -61,6 +64,9 @@
 /* Enable multi-homed UDP server capability */
 #define ENABLE_MULTIHOME 1
 
+/* Enable OFB and CFB cipher modes */
+#define ENABLE_OFB_CFB_MODE 1
+
 /* Allow --askpass and --auth-user-pass passwords to be read from a file */
 /* #undef ENABLE_PASSWORD_SAVE */
 
@@ -91,7 +97,7 @@
 /* Enable strict options check between peers */
 /* #undef ENABLE_STRICT_OPTIONS_CHECK */
 
-/* Enable systemd support */
+/* Enable systemd integration */
 /* #undef ENABLE_SYSTEMD */
 
 /* Enable --x509-username-field feature */
@@ -231,7 +237,7 @@
 #define HAVE_GETHOSTBYNAME 1
 
 /* Define to 1 if you have the `getpass' function. */
-/* #undef HAVE_GETPASS */
+#define HAVE_GETPASS 1
 
 /* Define to 1 if you have the `getpeereid' function. */
 /* #undef HAVE_GETPEEREID */
@@ -332,9 +338,6 @@
 /* Define to 1 if you have the <netdb.h> header file. */
 #define HAVE_NETDB_H 1
 
-/* Define to 1 if you have the <netinet/if_ether.h> header file. */
-#define HAVE_NETINET_IF_ETHER_H 1
-
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #define HAVE_NETINET_IN_H 1
 
@@ -392,8 +395,8 @@
 /* Define to 1 if you have the <resolv.h> header file. */
 #define HAVE_RESOLV_H 1
 
-/* Define to 1 if you have the `res_init' function. */
-/* #undef HAVE_RES_INIT */
+/* Define to 1 if you have the `sd_booted' function. */
+/* #undef HAVE_SD_BOOTED */
 
 /* Define to 1 if you have the `select' function. */
 #define HAVE_SELECT 1
@@ -472,6 +475,9 @@
 
 /* Define to 1 if you have the `system' function. */
 #define HAVE_SYSTEM 1
+
+/* Define to 1 if you have the <systemd/sd-daemon.h> header file. */
+/* #undef HAVE_SYSTEMD_SD_DAEMON_H */
 
 /* Define to 1 if you have the <sys/epoll.h> header file. */
 #define HAVE_SYS_EPOLL_H 1
@@ -571,7 +577,7 @@
 #define LT_OBJDIR ".libs/"
 
 /* Version in windows resource format */
-#define OPENVPN_VERSION_RESOURCE 2,3,4,0
+#define OPENVPN_VERSION_RESOURCE 2,3,8,0
 
 /* Name of package */
 #define PACKAGE "openvpn"
@@ -583,7 +589,7 @@
 #define PACKAGE_NAME "OpenVPN"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "OpenVPN 2.3.4"
+#define PACKAGE_STRING "OpenVPN 2.3.8"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "openvpn"
@@ -592,7 +598,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.3.4"
+#define PACKAGE_VERSION "2.3.8"
 
 /* Path separator */
 #define PATH_SEPARATOR '/'
@@ -604,7 +610,7 @@
 #define RETSIGTYPE void
 
 /* Path to route tool */
-#define ROUTE_PATH "/system/bin/route"
+#define ROUTE_PATH "/sbin/route"
 
 /* SIGHUP replacement */
 /* #undef SIGHUP */
@@ -629,6 +635,9 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
+
+/* Path to systemd-ask-password tool */
+#define SYSTEMD_ASK_PASSWORD_PATH "/bin/systemd-ask-password"
 
 /* The tap-windows id */
 #define TAP_WIN_COMPONENT_ID "tap0901"
@@ -698,7 +707,7 @@
 /* #undef USE_VALGRIND */
 
 /* Version number of package */
-#define VERSION "2.3.4"
+#define VERSION "2.3.8"
 
 /* Define to 1 if on MINIX. */
 /* #undef _MINIX */
