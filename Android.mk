@@ -6,15 +6,23 @@ LOCAL_PATH:= $(call my-dir)
 # missing.c defines undefined functions.
 # in tun.c replace /dev/net/tun with /dev/tun
 
+include $(CLEAR_VARS)
+
 openvpn_SRC_FILES:= $(wildcard $(LOCAL_PATH)/src/openvpn/*.c)
 openvpn_SRC_FILES:= $(openvpn_SRC_FILES:$(LOCAL_PATH)/%=%)
 
-plugins_SRC_FILES:= $(wildcard $(LOCAL_PATH)/src/plugins/*.c)
-plugins_SRC_FILES:= $(plugins_SRC_FILES:$(LOCAL_PATH)/%=%)
+plugin_SRC_FILES:= $(wildcard $(LOCAL_PATH)/src/plugins/*.c)
+plugin_SRC_FILES:= $(plugin_SRC_FILES:$(LOCAL_PATH)/%=%)
 
-common_CFLAGS += -DANDROID_CHANGES -DHAVE_CONFIG_H
+LOCAL_SRC_FILES := \
+	$(openvpn_SRC_FILES) \
+	$(plugin_SRC_FILES)
 
-common_C_INCLUDES += \
+LOCAL_CFLAGS := -DANDROID_CHANGES -DHAVE_CONFIG_H -Wno-unused-parameter
+
+LOCAL_C_INCLUDES := \
+	bionic \
+	bionic/libstdc++/include \
 	external/openssl \
 	external/openssl/include \
 	external/openssl/crypto \
@@ -22,47 +30,20 @@ common_C_INCLUDES += \
 	external/openvpn/include \
 	external/openvpn/src/compat \
 	external/openvpn \
+	libcore/include \
+	system/core/libnetutils \
 	system/security/keystore
 
-common_SHARED_LIBRARIES := libcutils libkeystore_binder
+LOCAL_CLANG:=true
 
-ifneq ($(TARGET_SIMULATOR),true)
-	common_SHARED_LIBRARIES += libdl
-endif
+LOCAL_ADDITIONAL_DEPENDENCIES:=$(LOCAL_PATH)/Android.mk
 
-# static linked binary
-# =====================================================
+LOCAL_SHARED_LIBRARIES := libcutils libkeystore_binder libnetutils libssl libcrypto liblzo libstlport liblog libdl
 
-#include $(CLEAR_VARS)
-#LOCAL_SRC_FILES:= $(common_SRC_FILES)
-#LOCAL_CFLAGS:= $(common_CFLAGS)
-#LOCAL_C_INCLUDES:= $(common_C_INCLUDES)
-#
-#LOCAL_SHARED_LIBRARIES += $(common_SHARED_LIBRARIES)
-#LOCAL_STATIC_LIBRARIES:= libopenssl-static liblzo-static
-#
-##LOCAL_LDLIBS += -ldl
-##LOCAL_PRELINK_MODULE:= false
-#
-#LOCAL_MODULE:= openvpn-static
-#LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
-#include $(BUILD_EXECUTABLE)
-
-# dynamic linked binary
-# =====================================================
-
-include $(CLEAR_VARS)
-LOCAL_SRC_FILES:= $(openvpn_SRC_FILES)
-LOCAL_SRC_FILES+= $(plugins_SRC_FILES)
-LOCAL_CFLAGS:= $(common_CFLAGS)
-LOCAL_C_INCLUDES:= $(common_C_INCLUDES)
-
-LOCAL_SHARED_LIBRARIES:= $(common_SHARED_LIBRARIES) libcutils libssl libcrypto liblzo
-
-#LOCAL_LDLIBS += -ldl
-#LOCAL_PRELINK_MODULE:= false
+LOCAL_LDLIBS := -ldl
+LOCAL_PRELINK_MODULE := false
 
 LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE:= openvpn
+LOCAL_MODULE := openvpn
 LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
 include $(BUILD_EXECUTABLE)

@@ -50,7 +50,7 @@
 #define ENABLE_HTTP_PROXY 1
 
 /* enable iproute2 support */
-/* #undef ENABLE_IPROUTE */
+#undef ENABLE_IPROUTE
 
 /* Enable LZO compression library */
 #define ENABLE_LZO 1
@@ -65,7 +65,7 @@
 #define ENABLE_MULTIHOME 1
 
 /* Enable OFB and CFB cipher modes */
-#define ENABLE_OFB_CFB_MODE 1
+/* #undef ENABLE_OFB_CFB_MODE */
 
 /* Allow --askpass and --auth-user-pass passwords to be read from a file */
 /* #undef ENABLE_PASSWORD_SAVE */
@@ -237,7 +237,7 @@
 #define HAVE_GETHOSTBYNAME 1
 
 /* Define to 1 if you have the `getpass' function. */
-#define HAVE_GETPASS 1
+/* #undef HAVE_GETPASS */
 
 /* Define to 1 if you have the `getpeereid' function. */
 /* #undef HAVE_GETPEEREID */
@@ -438,10 +438,10 @@
 #define HAVE_STAT 1
 
 /* Define to 1 if you have the <stdarg.h> header file. */
-#define HAVE_STDARG_H 1
+/* #undef HAVE_STDARG_H */
 
 /* Define to 1 if you have the <stdbool.h> header file. */
-#define HAVE_STDBOOL_H 1
+/*  #undef HAVE_STDBOOL_H 1 */
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
@@ -465,7 +465,7 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the <stropts.h> header file. */
-#define HAVE_STROPTS_H 1
+/* #undef HAVE_STROPTS_H */
 
 /* Define to 1 if you have the `syslog' function. */
 #define HAVE_SYSLOG 1
