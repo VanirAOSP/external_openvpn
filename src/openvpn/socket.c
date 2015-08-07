@@ -137,10 +137,6 @@ openvpn_getaddrinfo (unsigned int flags,
 
   ASSERT(res);
 
-#if defined(HAVE_RES_INIT)
-  res_init ();
-#endif
-
   if (!hostname)
     hostname = "::";
 
@@ -197,6 +193,9 @@ openvpn_getaddrinfo (unsigned int flags,
        */
       while (true)
         {
+#ifndef WIN32
+	  res_init ();
+#endif
           /* try hostname lookup */
           hints.ai_flags = 0;
           dmsg (D_SOCKET_DEBUG, "GETADDRINFO flags=0x%04x ai_family=%d ai_socktype=%d",
@@ -215,10 +214,13 @@ openvpn_getaddrinfo (unsigned int flags,
                     }
                   else
                     {
+		      /* turn success into failure (interrupted syscall) */
                       if (0 == status) {
                           ASSERT(res);
                           freeaddrinfo(*res);
-                          res = NULL;
+                          *res = NULL;
+                          status = EAI_AGAIN;	/* = temporary failure */
+                          errno = EINTR;
                       }
                       goto done;
                     }
@@ -1150,7 +1152,6 @@ resolve_bind_local (struct link_socket *sock)
 	case AF_INET6:
 	    {
 	      int status;
-	      int err;
 	      CLEAR(sock->info.lsa->local.addr.in6);
 	      if (sock->local_host)
 		{
@@ -1173,7 +1174,7 @@ resolve_bind_local (struct link_socket *sock)
 		{
 		  msg (M_FATAL, "getaddr6() failed for local \"%s\": %s",
 		       sock->local_host,
-		       gai_strerror(err));
+		       gai_strerror(status));
 		}
 	      sock->info.lsa->local.addr.in6.sin6_port = htons (sock->local_port);
 	    }
@@ -1227,6 +1228,7 @@ resolve_remote (struct link_socket *sock,
 	      unsigned int flags = sf2gaf(GETADDR_RESOLVE|GETADDR_UPDATE_MANAGEMENT_STATE, sock->sockflags);
 	      int retry = 0;
 	      int status = -1;
+	      struct addrinfo* ai;
 
 	      if (sock->connection_profiles_defined && sock->resolve_retry_seconds == RESOLV_RETRY_INFINITE)
 		{
@@ -1263,7 +1265,6 @@ resolve_remote (struct link_socket *sock,
 		  ASSERT (0);
 		}
 
-		  struct addrinfo* ai;
 		  /* Temporary fix, this need to be changed for dual stack */
 		  status = openvpn_getaddrinfo(flags, sock->remote_host, retry,
 											  signal_received, af, &ai);

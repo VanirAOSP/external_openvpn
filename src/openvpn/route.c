@@ -838,7 +838,7 @@ redirect_default_route_to_vpn (struct route_list *rl, const struct tuntap *tt, u
 
   if ( rl && rl->flags & RG_ENABLE )
     {
-      if (!(rl->spec.flags & RTSA_REMOTE_ENDPOINT))
+      if (!(rl->spec.flags & RTSA_REMOTE_ENDPOINT) && (rl->flags & RG_REROUTE_GW))
 	{
 	  msg (M_WARN, "%s VPN gateway parameter (--route-gateway or --ifconfig) is missing", err);
 	}
@@ -1318,15 +1318,18 @@ add_route (struct route_ipv4 *r,
 
 #if defined(TARGET_LINUX)
 #ifdef ENABLE_IPROUTE
-  /* FIXME -- add on-link support for ENABLE_IPROUTE */
-  argv_printf (&argv, "%s route add %s/%d via %s",
+  argv_printf (&argv, "%s route add %s/%d",
   	      iproute_path,
 	      network,
-	      count_netmask_bits(netmask),
-	      gateway);
+             count_netmask_bits(netmask));
+
   if (r->flags & RT_METRIC_DEFINED)
     argv_printf_cat (&argv, "metric %d", r->metric);
 
+  if (is_on_link (is_local_route, flags, rgi))
+    argv_printf_cat (&argv, "dev %s", rgi->iface);
+  else
+    argv_printf_cat (&argv, "via %s", gateway);
 #else
   argv_printf (&argv, "%s add -net %s netmask %s",
 	       ROUTE_PATH,
@@ -2598,7 +2601,7 @@ get_default_gateway (struct route_gateway_info *rgi)
   gc_free (&gc);
 }
 
-#elif defined(TARGET_FREEBSD)||defined(TARGET_DRAGONFLY)
+#elif defined(TARGET_FREEBSD)||defined(TARGET_DRAGONFLY)||defined(TARGET_SOLARIS)
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -2626,12 +2629,26 @@ get_default_gateway (struct route_gateway_info *rgi)
   struct sockaddr *gate = NULL, *sa;
   struct  rt_msghdr *rtm_aux;
 
+#if defined(TARGET_FREEBSD)||defined(TARGET_DRAGONFLY)
+
 #define NEXTADDR(w, u) \
         if (rtm_addrs & (w)) {\
             l = ROUNDUP(u.sa_len); memmove(cp, &(u), l); cp += l;\
         }
 
 #define ADVANCE(x, n) (x += ROUNDUP((n)->sa_len))
+
+#else /* TARGET_SOLARIS */
+
+#define NEXTADDR(w, u) \
+        if (rtm_addrs & (w)) {\
+            l = ROUNDUP(sizeof(struct sockaddr_in)); memmove(cp, &(u), l); cp += l;\
+        }
+
+#define ADVANCE(x, n) (x += ROUNDUP(sizeof(struct sockaddr_in)))
+
+#endif
+
 
 #define rtm m_rtmsg.m_rtm
 
@@ -2652,9 +2669,12 @@ get_default_gateway (struct route_gateway_info *rgi)
   rtm.rtm_addrs = rtm_addrs; 
 
   so_dst.sa_family = AF_INET;
-  so_dst.sa_len = sizeof(struct sockaddr_in);
   so_mask.sa_family = AF_INET;
+
+#if defined(TARGET_FREEBSD)||defined(TARGET_DRAGONFLY)
+  so_dst.sa_len = sizeof(struct sockaddr_in);
   so_mask.sa_len = sizeof(struct sockaddr_in);
+#endif
 
   NEXTADDR(RTA_DST, so_dst);
   NEXTADDR(RTA_NETMASK, so_mask);
