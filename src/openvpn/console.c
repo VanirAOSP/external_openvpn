@@ -138,6 +138,71 @@ close_tty (FILE *fp)
 
 #endif
 
+#ifdef ANDROID_CHANGES
+
+/*
+ * The password is password.
+ */
+const char *getpass(const char *prompt) {
+    msg (M_WARN, "getpass");
+    struct termios before, flags;
+
+    FILE *fp;
+
+    fp = open_tty (true);
+    fprintf(fp, "%s", prompt);
+    fflush (fp);
+    close_tty(fp);
+
+    fp = open_tty (false);
+    tcgetattr(fp, &before);
+
+    flags = before;
+    flags.c_lflag = (flags.c_lflag & ~ECHO) | ECHONL;
+
+    static char password[64];
+    memset(password, 0, sizeof(password));
+
+    if (tcsetattr(fp, TCSANOW, &flags) != 0)
+    {
+        if (fgets(password, sizeof(password), fp) != NULL)
+        {
+            password[strlen(password) - 1] = '\0';
+            chomp(password);
+        }
+        else {
+            memset(password, 0, sizeof(password));
+        }
+
+        if (tcsetattr(fp, TCSANOW, &before) != 0) {
+            msg (M_WARN, "Failed to restore ECHO terminal flag");
+        }
+    }
+    else
+    {
+        close_tty (fp);
+
+        msg (M_WARN, "attempting VISIBLE password auth");
+
+        fp = open_tty (true);
+        fprintf(fp, "%s", prompt);
+        fflush (fp);
+        close_tty(fp);
+
+        fp = open_tty (false);
+        if (fgets(password, sizeof(password), fp) != NULL)
+        {
+            password[strlen(password) - 1] = '\0';
+            chomp(password);
+        }
+    }
+    close_tty (fp);
+
+    return password;
+}
+
+#endif
+
 #ifdef ENABLE_SYSTEMD
 
 /*
@@ -207,7 +272,7 @@ get_console_input (const char *prompt, const bool echo, char *input, const int c
 
 #if defined(WIN32)
   return get_console_input_win32 (prompt, echo, input, capacity);
-#elif defined(HAVE_GETPASS)
+#elif defined(HAVE_GETPASS) || defined(ANDROID_CHANGES)
   if (echo)
     {
       FILE *fp;
@@ -227,7 +292,7 @@ get_console_input (const char *prompt, const bool echo, char *input, const int c
     }
   else
     {
-      char *gp = getpass (prompt);
+      char *gp = getpass(prompt);
       if (gp)
 	{
 	  strncpynt (input, gp, capacity);
