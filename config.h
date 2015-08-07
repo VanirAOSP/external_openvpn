@@ -50,7 +50,7 @@
 #define ENABLE_HTTP_PROXY 1
 
 /* enable iproute2 support */
-#undef ENABLE_IPROUTE
+#define ENABLE_IPROUTE 1
 
 /* Enable LZO compression library */
 #define ENABLE_LZO 1
