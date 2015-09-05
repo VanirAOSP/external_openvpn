@@ -33,6 +33,7 @@
 #include "error.h"
 #include "buffer.h"
 #include "misc.h"
+#include "getpass.h"
 
 #ifdef ENABLE_SYSTEMD
 #include <systemd/sd-daemon.h>

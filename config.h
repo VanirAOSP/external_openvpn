@@ -237,7 +237,7 @@
 #define HAVE_GETHOSTBYNAME 1
 
 /* Define to 1 if you have the `getpass' function. */
-/* #undef HAVE_GETPASS */
+#define HAVE_GETPASS 1
 
 /* Define to 1 if you have the `getpeereid' function. */
 /* #undef HAVE_GETPEEREID */
