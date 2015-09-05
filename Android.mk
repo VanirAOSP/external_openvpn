@@ -23,10 +23,11 @@ LOCAL_CFLAGS := -DANDROID_CHANGES -DHAVE_CONFIG_H -Wno-unused-parameter
 LOCAL_C_INCLUDES := \
 	bionic \
 	bionic/libstdc++/include \
+	external/iproute2/include \
+	external/lzo/include \
 	external/openssl \
 	external/openssl/include \
 	external/openssl/crypto \
-	external/lzo/include \
 	external/openvpn/include \
 	external/openvpn/src/compat \
 	external/openvpn \
@@ -38,10 +39,10 @@ LOCAL_CLANG:=true
 
 LOCAL_ADDITIONAL_DEPENDENCIES:=$(LOCAL_PATH)/Android.mk
 
-LOCAL_SHARED_LIBRARIES := libcutils libkeystore_binder libnetutils libssl libcrypto liblzo libstlport liblog libdl
+LOCAL_SHARED_LIBRARIES := libcutils libkeystore_binder libnetutils libssl libcrypto liblzo libstlport liblog libiprouteutil libnetlink libdl
 
 LOCAL_LDLIBS := -ldl
-LOCAL_PRELINK_MODULE := false
+#LOCAL_PRELINK_MODULE := false
 
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := openvpn
